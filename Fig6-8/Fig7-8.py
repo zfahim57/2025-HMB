@@ -1,6 +1,7 @@
-from ELATE import elastic
+import elastic
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as axes3d
+from matplotlib.ticker import FormatStrFormatter
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 import pandas as pd
@@ -9,8 +10,7 @@ from matplotlib.colors import LightSource
 from matplotlib import cbook, cm
 from matplotlib.axes import Axes
 import seaborn as sns
-sns.set(font_scale=1.4, font='Arial')
-
+sns.set(font_scale=1.5, font='Arial')
 
 def move_ax(ax, dx=None, dy=None, axisoff=True):
     pos1 = ax.get_position()
@@ -79,67 +79,65 @@ def shear_calculation(Tstart, delT):
     return x, y, z
 
 #plotting the xy plane from 350 to 400
-x, y, z = shear_calculation(350,10)
-lx = np.linspace(0, -0.2, 10)
-angle = 2.1746504934615634
-ly = np.tan(angle) * lx
+x, y, z = shear_calculation(320, 10)
 
-scatter = plt.scatter(x[2], y[2], c=z[2], cmap='viridis')
+scatter = plt.scatter(x[2], y[2], c=z[2], s=5, cmap='viridis')
 cbar = plt.colorbar(scatter)
 cbar.set_label("Temperature (K)")#, fontsize=16)
-cbar.ax.tick_params()#labelsize=15)
-plt.axhline(y=0, color='black', linestyle='-')
-plt.axvline(x=0, color='black', linestyle='-')
-plt.plot(lx, ly, color='r', linestyle='-')
-plt.xlabel('X')#, fontdict={'family': 'serif', 'size': 16})
-plt.ylabel('Y')#, fontdict={'family': 'serif', 'size': 16})
-plt.tick_params(axis='x')#, labelsize=15)
-plt.tick_params(axis='y')#, labelsize=15)
+cbar.set_ticks(np.linspace(320, 400, num=9))
+#plt.plot(lx, ly, color='r', linestyle='->')
+plt.xlabel('$G_X$ (GPa)')
+plt.ylabel('$G_Y$ (GPa)')
+ax = plt.gca()
+ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+# Coordinates of points O, A, and B
+x_O, y_O = 0, 0
+x_A, y_A = -0.26, 0.25
+
+# Plot points O, A, and B
+plt.text(x_A-0.18, y_A+0.1, r"[$\overline{1}10]$", color='k')
+
+plt.arrow(x_O, y_O, x_A - x_O, y_A - y_O, head_width=0.05, head_length=0.1, fc='k', ec='k')
+ 
 plt.tight_layout()
 plt.grid(False)
-plt.savefig('350_400_shear_line-1.jpg', dpi=500)
-plt.show()
+plt.savefig('Fig8-hightemp_shear.pdf')
 plt.close()
 
+sns.set(font_scale=2.6, font='Arial')
 #plotting xz and yz from 50 to 400
 x, y, z = shear_calculation(50, 50)
-fig, axs = plt.subplots(1, 2, figsize=(12, 8))
-plt.subplots_adjust(wspace=0.5)
-label_size = 20
-abc_size = 22
-ax_size = 18
+#fig, axs = plt.subplots(1, 2, figsize=(12, 7.5))
+fig, axs = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw={'width_ratios': [1, 1.2]})
+plt.subplots_adjust(wspace=0.25)
 labelpad_value = -10
 for i in range(2):
-    scatter = axs[i].scatter(x[i], y[i], c=z[i], cmap='viridis')
+    scatter = axs[i].scatter(x[i], y[i], c=z[i], s=5, cmap='viridis')
     if i == 2:
-        axs[i].set_xlabel('X')#, fontdict={'family': 'Arial', 'size': label_size})
-        axs[i].set_ylabel('Y')#, fontdict={'family': 'Arial', 'size': label_size}, labelpad=labelpad_value)
-        axs[i].set_title('(c)')#, fontdict={'family': 'Arial', 'size': abc_size})
+        axs[i].set_xlabel('X')
+        axs[i].set_ylabel('Y')
+        axs[i].set_title('(c)')
         axs[i].tick_params(axis='both', which='major', pad=10)
     if i == 0:
-       axs[i].set_xlabel('Y')#, fontdict={'family': 'Arial', 'size': label_size})
-       axs[i].set_ylabel('Z')#, fontdict={'family': 'Arial', 'size': label_size}, labelpad=labelpad_value)
-       axs[i].set_title('(a)')#, fontdict={'family': 'Arial', 'size': abc_size})
+       axs[i].set_xlabel('$G_x$ (GPa)')
+       axs[i].set_ylabel('$G_z$ (GPa)')
+       axs[i].set_title('(a)')
        axs[i].tick_params(axis='both', which='major', pad=10)
     if i == 1:
-       axs[i].set_xlabel('X')#, fontdict={'family': 'Arial', 'size': label_size})
-       axs[i].set_ylabel('Z')#, fontdict={'family': 'Arial', 'size': label_size}, labelpad=labelpad_value)
-       axs[i].set_title('(b)')#, fontdict={'family': 'Arial', 'size': abc_size})
+       axs[i].set_xlabel('$G_x$ (GPa)')
+       #axs[i].set_ylabel('Z')
+       axs[i].set_title('(b)')
        axs[i].tick_params(axis='both', which='major', pad=10)
-    axs[i].tick_params(axis='x')#, labelsize=ax_size)
-    axs[i].tick_params(axis='y')#, labelsize=ax_size)
-    axs[i].set_xlim(-3,3)
-    axs[i].set_ylim(-12,12)
+    axs[i].xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+    axs[i].yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
     axs[i].grid(False)
-#        move_ax(axs[i], dx=-0.2, axisoff=False)
-fig.subplots_adjust(left=0.35)
+
+move_ax(axs[0], dx=0.005, axisoff=False)
+move_ax(axs[1], dx=-0.005, axisoff=False)
+
 cbar = plt.colorbar(scatter)
-cbar.set_label("Temperature (K)")#, fontsize=abc_size)
-cbar.ax.tick_params(labelsize=ax_size) 
+cbar.set_label("Temperature (K)")#, fontsize=16)
+cbar.set_ticks(np.linspace(50, 400, num=8))
 fig.tight_layout()
-plt.subplots_adjust(hspace=0.6, wspace=0.5)
-plt.savefig('subplot_2.jpg',dpi=500)
-plt.show()
-
-
-
+plt.savefig('Fig7-shear_projection.pdf')

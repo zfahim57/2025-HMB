@@ -1,18 +1,16 @@
-from ELATE import elastic
 import matplotlib.pyplot as plt
+import elastic
 import mpl_toolkits.mplot3d.axes3d as axes3d
 import numpy as np
 import pandas as pd
 import math
 import matplotlib.colors as colors
 import matplotlib as mpl
-import pyvista as pv
-from pyvista import demos
 from matplotlib.ticker import LinearLocator
 from matplotlib import cm
 import seaborn as sns
 import os
-sns.set(font_scale=1.2, font='arial', style='white')
+sns.set(font_scale=1.4, font='arial', style='white')
 
 def move_ax(ax, dx=None, dy=None, axisoff=True):
     pos1 = ax.get_position()
@@ -60,19 +58,19 @@ def minimum_shear(mat, npoints=200):
 
 C = np.zeros((12, 6, 6))
 T = 300
-shear_modulus = np.zeros((12, 200))
-chi = np.linspace(0, 2*np.pi, 200)
+N = 50
+shear_modulus = np.zeros((12, N))
+chi = np.linspace(0, 2*np.pi, N)
 
 data = np.loadtxt('graph/%g.txt' % T)
 material = elastic.Elastic(data)
 f = np.vectorize(lambda x, y: material.shear2D([x, y]))
-N = 100
 theta, phi = spherical_grid(N)
 r = f(theta, phi)
 xmax, ymax, zmax = spherical_coord(r[1], theta, phi)
 xmin, ymin, zmin = spherical_coord(r[0], theta, phi)
 min_shear = np.min(r[0])
-value, tht1, ph1, ch1 = minimum_shear(material, npoints=200)
+value, tht1, ph1, ch1 = minimum_shear(material, npoints=N)
 tht1, ph1, ch1 = tht1*180/np.pi,360- ph1*180/np.pi, ch1*180/np.pi
 #print(value, tht1, ph1, ch1)
 fig = plt.figure(figsize=(8, 8))
@@ -90,7 +88,16 @@ ax.set_xticks([])
 ax.set_yticks([])
 ax.set_zticks([])
 # Show the plot
-ax.text(2, -0.05, -0.15, f'$\\tau_{{min}}$ = {min_shear:0.02f} GPa \nat ($\\theta$, $\\phi$, $\\chi$) =  \n (${tht1:0.02f}$, ${ph1:0.02f}$, ${ch1:0.02f}$)', color='black', ha='center')
+#ax.text(2, -0.05, -0.15, f'$\\G_\\text{min}$ = {min_shear:0.02f} GPa \nat ($\\theta$, $\\phi$, $\\chi$) =  \n (${tht1:0.0f}$, ${ph1:0.0f}$, ${ch1:0.0f}$)', color='black', ha='center')
+#ax.text(2, -0.05, -0.15, f'$G_{{min}}$ = {min_shear:0.02f} GPa at ($\\theta$, $\\phi$, $\\chi$) \n (${tht1:0.02f}$, ${ph1:0.02f}$, ${ch1:0.02f}$)', color='black', ha='center')
+ax.text(
+    2, -0.05, -0.15,
+    f'$G_{{\\text{{min}}}} (\\theta, \\phi, \\chi)$\n'
+    f'= {min_shear:.2f} GPa\n'
+    f'at ({tht1:.0f}, {ph1:.0f}, {ch1:.0f})',
+    color='black', ha='center'
+)
+
 ax.view_init(10,-60)
 ax.set_axis_off()
 
@@ -111,10 +118,9 @@ ax.dist = -100
 
 cax = ax.inset_axes([0.27, 0.15, 0.5, 0.04])
 cbar = fig.colorbar(m, ax=ax,orientation = 'horizontal', cax=cax)
-cbar.set_label('Shear Modulus(GPa)')#, fontsize=18)
+cbar.set_label('Shear Modulus $G$ (GPa)')#, fontsize=18)
 cbar.ax.tick_params()#labelsize=12)
 move_ax(ax, dx=-0.2, axisoff=False)
 
-plt.savefig('mmshear-1.pdf')
-plt.show()
+plt.savefig('Fig6-minimum_shear.pdf')
 
