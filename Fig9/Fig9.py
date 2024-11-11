@@ -41,5 +41,4 @@ axs[1].legend(loc='upper right')
 axs[1].grid(False)
 
 plt.tight_layout()
-plt.show()
-plt.savefig("Strain_Tot_sub_250_350.jpg", dpi=500)
+plt.savefig("Fig9-strain.pdf')
