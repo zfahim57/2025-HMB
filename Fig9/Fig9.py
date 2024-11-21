@@ -157,22 +157,22 @@ for label in ['xy', 'xz', 'yz', '-450']:
     if label == '-450':
         x0 = xp.copy()
         #label = f'$\sigma_{{[\\overline{{4}}50](001)}}$'
-        label = f'$\sigma_{{\\text{{min}}}}$'
+        label0 = f'$\sigma_{{\\text{{min}}}}$'
     else:
-        label = '$\sigma_{' + label + '}$'
+        label0 = '$\sigma_{' + label + '}$'
         x0 = x.copy()
-    axs[0].plot(x0[:id], y[:id], lw=2, label = label)
-    axs[1].plot(x0[:id], e[:id], lw=2, label = label)
+    axs[0].plot(x0[:id], y[:id], lw=2, label = label0)
+    if label != 'xy':
+        axs[1].plot(x0[:id], e[:id], lw=2, label = label0)
 
-#axs[0].set_yscale('power', power=3)
 axs[0].set_yscale('power', power=2.3)
 axs[0].set_title('(a)')
 axs[1].set_title('(b)')
 axs[0].set_xticklabels([])
 #axs[0].grid(False)
-axs[1].grid(False)
-axs[0].set_xlim(-0.001, 0.2)
-axs[1].set_xlim(-0.001, 0.2)
+#axs[1].grid(False)
+axs[0].set_xlim(-0.001, 0.16)
+axs[1].set_xlim(-0.001, 0.16)
 axs[0].set_ylim(0, 4200)
 #axs[1].set_ylim(0, 690)
 axs[0].legend(loc=1)
@@ -183,4 +183,4 @@ axs[1].set_xlabel('$\epsilon$')
 axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 plt.tight_layout()
 plt.savefig('Fig9-strain.pdf')
-plt.show()
+#plt.show()
