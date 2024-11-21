@@ -156,10 +156,9 @@ for label in ['xy', 'xz', 'yz', '-450']:
 
     if label == '-450':
         x0 = xp.copy()
-        #label = f'$\sigma_{{[\\overline{{4}}50](001)}}$'
-        label0 = f'$\sigma_{{\\text{{min}}}}$'
+        label0 = f'$\epsilon_{{\\text{{min}}}}$'
     else:
-        label0 = '$\sigma_{' + label + '}$'
+        label0 = '$\epsilon_{' + label + '}$'
         x0 = x.copy()
     axs[0].plot(x0[:id], y[:id], lw=2, label = label0)
     if label != 'xy':
