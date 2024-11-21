@@ -127,24 +127,28 @@ direction = ['xy', 'xz','yz', '-450']
 #d_var = ['xy', 'xz', 'yz', '-110']
 p_300 = {}
 pxz = {}
+energy = {}
 for var in direction:
     if var != '-450':
         log = lammps_logfile.File('%g_%s.log' % (300, var))
         d = 'P'+var
         z = abs(log.get(d, run_num=2))
         p_300[var] = z
+        energy[var] = log.get('TotEng', run_num=2)*0.0433634*1e3
     else:
         log = lammps_logfile.File('300_-450.log')
         pxz = abs(log.get('Pxz', run_num = 2))
         pyz = abs(log.get('Pyz', run_num = 2))
         z = abs(pyz*np.sin(theta) - pxz*np.cos(theta))
-        p_300['-450'] = z
+        p_300[var] = z
+        energy[var] = log.get('TotEng', run_num=2)*0.0433634*1e3
 
 fig, axs = plt.subplots(2, 1, figsize=(9, 8))
 for label in ['xy', 'xz', 'yz', '-450']:
     y = p_300[label]
     y = savgol_filter(y, 201, 2)
     y -= y[0] + 1e-2
+    e = savgol_filter(energy[label], 201, 2)
     if label == 'xy':
         id = int(len(y)/2.5)
     else:
@@ -158,6 +162,7 @@ for label in ['xy', 'xz', 'yz', '-450']:
         label = '$\sigma_{' + label + '}$'
         x0 = x.copy()
     axs[0].plot(x0[:id], y[:id], lw=2, label = label)
+    axs[1].plot(x0[:id], e[:id], lw=2, label = label)
 
 #axs[0].set_yscale('power', power=3)
 axs[0].set_yscale('power', power=2.3)
@@ -169,12 +174,13 @@ axs[1].grid(False)
 axs[0].set_xlim(-0.001, 0.2)
 axs[1].set_xlim(-0.001, 0.2)
 axs[0].set_ylim(0, 4200)
+#axs[1].set_ylim(0, 690)
 axs[0].legend(loc=1)
 axs[1].legend(loc=1)
 axs[0].set_ylabel('$\sigma$ (MPa)')
-axs[1].set_ylabel('$E$ ()')
+axs[1].set_ylabel('$E$ (meV)')
 axs[1].set_xlabel('$\epsilon$')
 axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 plt.tight_layout()
 plt.savefig('Fig9-strain.pdf')
-#plt.show()
+plt.show()
