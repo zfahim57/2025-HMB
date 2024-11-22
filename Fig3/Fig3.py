@@ -40,7 +40,7 @@ ax1.set_title("(a)")
 
 ax2.plot(temp,Energy1, label='Heating', color='brown', lw=linewidth)
 ax2.plot(temp2,Energy2, label='Cooling', color='teal', lw=linewidth)
-ax2.set_ylabel("$PE$ (meV/atoms)")
+ax2.set_ylabel("$PE$ (meV / atoms)")
 ax2.set_xlabel("Temperature(K)")
 ax2.set_title("(b)")
 ax1.tick_params(axis='y')
