@@ -139,22 +139,14 @@ for var in direction:
         d = 'P'+var
         z = abs(log.get(d, run_num=2))
         p_300[var] = z
-<<<<<<< HEAD
         energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
-=======
-        energy[var] = log.get(key, run_num=2)*0.0433634*1e3
->>>>>>> 49d4bf7bec08c00bdfe74c765a51a69036024c2d
     else:
         log = lammps_logfile.File('300_-450.log')
         pxz = abs(log.get('Pxz', run_num = 2))
         pyz = abs(log.get('Pyz', run_num = 2))
         z = abs(pyz*np.sin(theta) - pxz*np.cos(theta))
         p_300[var] = z
-<<<<<<< HEAD
         energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
-=======
-        energy[var] = log.get(key, run_num=2)*0.0433634*1e3
->>>>>>> 49d4bf7bec08c00bdfe74c765a51a69036024c2d
 
 fig, axs = plt.subplots(2, 1, figsize=(9, 10))
 for label in ['xy', 'xz', 'yz', '-450']:
@@ -191,7 +183,6 @@ axs[0].set_ylim(0, 4200)
 axs[0].legend(loc=1)
 axs[1].legend(loc=1)
 axs[0].set_ylabel('$\sigma$ (MPa)')
-<<<<<<< HEAD
 axs[1].set_ylabel('$\Delta E$ (meV / atom-$\mathrm{\AA}^2$)')
 axs[1].set_xlabel('$\epsilon$')
 axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -200,14 +191,6 @@ axs[1].yaxis.set_major_formatter(formatter)
 from matplotlib.ticker import MultipleLocator
 axs[1].xaxis.set_major_locator(MultipleLocator(0.05))
 axs[1].text( -0.01, 1.02, r"$\times 10^{-4}$", transform=axs[1].transAxes, fontsize=14, ha='center', va='center' )
-=======
-axs[1].set_ylabel('$\Delta E$ (meV)')
-axs[1].set_xlabel('$\epsilon$')
-axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-axs[1].yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-from matplotlib.ticker import MultipleLocator
-axs[1].xaxis.set_major_locator(MultipleLocator(0.05))
->>>>>>> 49d4bf7bec08c00bdfe74c765a51a69036024c2d
 plt.tight_layout()
 plt.savefig('Fig9-strain.pdf')
 #plt.show()
