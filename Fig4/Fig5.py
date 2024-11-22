@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
+from matplotlib.ticker import ScalarFormatter
 import seaborn as sns
 sns.set(font_scale=1.5, font='Arial')
 
@@ -42,7 +43,7 @@ yi = np.linspace(-6.3, 6.3, lcount)
 xi, yi = np.meshgrid(xi, yi)
 
 energy -= energy[len(energy)//2]
-energy /= A
+energy /= (A*15360)
 energy = energy.reshape(lcount, lcount)
 energy = energy.T
 vmin = 0.0
@@ -52,9 +53,18 @@ energy[energy < vmin] = vmin
 energy *= 0.043363 * 1000; print(14.38 * 0.043363)
 
 contour = plt.contourf(xi, yi, energy, levels=25, cmap='viridis')
-cbar = plt.colorbar(contour, format=tkr.FormatStrFormatter('%.2f'))
-cbar.set_label(r'$\Delta E$ (meV / $\mathrm{\AA}^2$)')
+#cbar = plt.colorbar(contour, format=tkr.FormatStrFormatter('%.6f'))
+cbar = plt.colorbar(contour, format=tkr.FuncFormatter(lambda x, pos: f"{x * 1e4:.2f}"))
+cbar.set_label(r'$\Delta E$ (meV / atom-$\mathrm{\AA}^2$)')
 cbar.ax.tick_params()
+cbar.ax.text(
+    1.8, 1.02,  # Position: slightly above the top of the bar
+    r"($\times 10^{-4}$)",  # LaTeX formatted scaling factor
+    transform=cbar.ax.transAxes,  # Use colorbar's coordinate system
+    ha='center',  # Horizontal alignment
+    va='bottom',  # Vertical alignment
+    fontsize=10
+)
 # Coordinates of points O, A, and B
 x_O, y_O = -0.2, 0.05
 x_A, y_A = -1.6, 1.15

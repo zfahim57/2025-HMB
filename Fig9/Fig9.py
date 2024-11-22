@@ -6,8 +6,10 @@ from scipy.optimize import curve_fit
 from scipy.interpolate import make_interp_spline
 from scipy.signal import savgol_filter
 from matplotlib.ticker import FormatStrFormatter
+from matplotlib.ticker import ScalarFormatter
+import matplotlib.ticker as tkr
 import seaborn as sns
-sns.set(font_scale=1.6, font='arial')
+sns.set(font_scale=2.0, font='arial')
 
 from matplotlib.transforms import Transform
 from matplotlib.ticker import FuncFormatter, FixedLocator
@@ -110,6 +112,7 @@ lx, ly, lz = cell_par[0], cell_par[1], cell_par[2]
 a, b = 1, 1.25
 c = np.sqrt(a**2 + b**2)
 theta = np.arctan((b*ly)/(a*lx))
+A = lx*ly*np.sin(cell_par[5]); print(A)
 
 log1 = lammps_logfile.File("300_xz.log")
 
@@ -128,27 +131,30 @@ direction = ['xy', 'xz','yz', '-450']
 p_300 = {}
 pxz = {}
 energy = {}
+#key = 'PotEng'
+key = 'TotEng'
 for var in direction:
     if var != '-450':
         log = lammps_logfile.File('%g_%s.log' % (300, var))
         d = 'P'+var
         z = abs(log.get(d, run_num=2))
         p_300[var] = z
-        energy[var] = log.get('TotEng', run_num=2)*0.0433634*1e3
+        energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
     else:
         log = lammps_logfile.File('300_-450.log')
         pxz = abs(log.get('Pxz', run_num = 2))
         pyz = abs(log.get('Pyz', run_num = 2))
         z = abs(pyz*np.sin(theta) - pxz*np.cos(theta))
         p_300[var] = z
-        energy[var] = log.get('TotEng', run_num=2)*0.0433634*1e3
+        energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
 
-fig, axs = plt.subplots(2, 1, figsize=(9, 8))
+fig, axs = plt.subplots(2, 1, figsize=(9, 10))
 for label in ['xy', 'xz', 'yz', '-450']:
     y = p_300[label]
-    y = savgol_filter(y, 201, 2)
+    y = savgol_filter(y, 20, 2)
     y -= y[0] + 1e-2
-    e = savgol_filter(energy[label], 201, 2)
+    e = savgol_filter(energy[label], 20, 2)
+    e -= e[0]
     if label == 'xy':
         id = int(len(y)/2.5)
     else:
@@ -156,31 +162,35 @@ for label in ['xy', 'xz', 'yz', '-450']:
 
     if label == '-450':
         x0 = xp.copy()
-        #label = f'$\sigma_{{[\\overline{{4}}50](001)}}$'
-        label = f'$\sigma_{{\\text{{min}}}}$'
+        label0 = f'$\epsilon_{{\\text{{min}}}}$'
     else:
-        label = '$\sigma_{' + label + '}$'
+        label0 = '$\epsilon_{' + label + '}$'
         x0 = x.copy()
-    axs[0].plot(x0[:id], y[:id], lw=2, label = label)
-    axs[1].plot(x0[:id], e[:id], lw=2, label = label)
+    axs[0].plot(x0[:id], y[:id], lw=2, label = label0)
+    if label != 'xy':
+        axs[1].plot(x0[:id], e[:id], lw=2, label = label0)
 
-#axs[0].set_yscale('power', power=3)
 axs[0].set_yscale('power', power=2.3)
 axs[0].set_title('(a)')
 axs[1].set_title('(b)')
 axs[0].set_xticklabels([])
 #axs[0].grid(False)
-axs[1].grid(False)
+#axs[1].grid(False)
 axs[0].set_xlim(-0.001, 0.2)
 axs[1].set_xlim(-0.001, 0.2)
 axs[0].set_ylim(0, 4200)
-#axs[1].set_ylim(0, 690)
+#axs[1].set_ylim(0, 0.00004)
 axs[0].legend(loc=1)
 axs[1].legend(loc=1)
 axs[0].set_ylabel('$\sigma$ (MPa)')
-axs[1].set_ylabel('$E$ (meV)')
+axs[1].set_ylabel('$\Delta E$ (meV / atom-$\mathrm{\AA}^2$)')
 axs[1].set_xlabel('$\epsilon$')
 axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+formatter = tkr.FuncFormatter(lambda x, pos: f"{x * 1e4:.2f}")
+axs[1].yaxis.set_major_formatter(formatter)
+from matplotlib.ticker import MultipleLocator
+axs[1].xaxis.set_major_locator(MultipleLocator(0.05))
+axs[1].text( -0.01, 1.02, r"$\times 10^{-4}$", transform=axs[1].transAxes, fontsize=14, ha='center', va='center' )
 plt.tight_layout()
 plt.savefig('Fig9-strain.pdf')
-plt.show()
+#plt.show()

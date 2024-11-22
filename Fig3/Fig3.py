@@ -12,11 +12,11 @@ sns.set(font_scale=2, font='arial')
 log = lammps_logfile.File("log.lammps")
 
 t = log.get("Temp", run_num = 2)
-p_energy1 = log.get("PotEng", run_num = 2)
+p_energy1 = log.get("PotEng", run_num = 2)*0.0433634*1000
 lzz1 = log.get("Lz", run_num = 2)/48
 
 t2 = log.get("Temp", run_num = 4)
-p_energy2 = log.get("PotEng", run_num = 4)
+p_energy2 = log.get("PotEng", run_num = 4)*0.0433634*1000
 lzz2 = log.get("Lz", run_num = 4)/48
 #p_energy2 = np.flip(p_energy2)
 #lzz2 = np.flip(lzz2)
@@ -40,7 +40,7 @@ ax1.set_title("(a)")
 
 ax2.plot(temp,Energy1, label='Heating', color='brown', lw=linewidth)
 ax2.plot(temp2,Energy2, label='Cooling', color='teal', lw=linewidth)
-ax2.set_ylabel("$PE$ (kCal/mol)")
+ax2.set_ylabel("$PE$ (meV/atoms)")
 ax2.set_xlabel("Temperature(K)")
 ax2.set_title("(b)")
 ax1.tick_params(axis='y')
