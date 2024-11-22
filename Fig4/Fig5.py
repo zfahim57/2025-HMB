@@ -29,7 +29,7 @@ yhi -= max([0, yz])
 
 cell_par = lammps_cell(xhi, xlo, yhi, ylo, zhi, zlo, xy, yz, xz) 
 A = cell_par[0]*cell_par[1]*np.sin(cell_par[5])
-print(A)
+#print(A)
 
 xyz = np.loadtxt('logEf.txt')
 xyz = xyz.T
@@ -43,7 +43,7 @@ yi = np.linspace(-6.3, 6.3, lcount)
 xi, yi = np.meshgrid(xi, yi)
 
 energy -= energy[len(energy)//2]
-energy /= (A*15360)
+energy /= 15360
 energy = energy.reshape(lcount, lcount)
 energy = energy.T
 vmin = 0.0
@@ -53,18 +53,10 @@ energy[energy < vmin] = vmin
 energy *= 0.043363 * 1000; print(14.38 * 0.043363)
 
 contour = plt.contourf(xi, yi, energy, levels=25, cmap='viridis')
-#cbar = plt.colorbar(contour, format=tkr.FormatStrFormatter('%.6f'))
-cbar = plt.colorbar(contour, format=tkr.FuncFormatter(lambda x, pos: f"{x * 1e4:.2f}"))
-cbar.set_label(r'$\Delta E$ (meV / atom-$\mathrm{\AA}^2$)')
+cbar = plt.colorbar(contour, format=tkr.FormatStrFormatter('%.2f'))
+cbar.set_label(r'$\Delta E$ (meV / atom)')
 cbar.ax.tick_params()
-cbar.ax.text(
-    1.8, 1.02,  # Position: slightly above the top of the bar
-    r"($\times 10^{-4}$)",  # LaTeX formatted scaling factor
-    transform=cbar.ax.transAxes,  # Use colorbar's coordinate system
-    ha='center',  # Horizontal alignment
-    va='bottom',  # Vertical alignment
-    fontsize=10
-)
+
 # Coordinates of points O, A, and B
 x_O, y_O = -0.2, 0.05
 x_A, y_A = -1.6, 1.15
@@ -87,4 +79,4 @@ plt.tick_params(axis='x')#, labelsize=ax_size)
 plt.tick_params(axis='y')#, labelsize=ax_size)
 plt.tight_layout()
 plt.savefig('Fig5-gamma_surface.pdf')
-
+#plt.show()

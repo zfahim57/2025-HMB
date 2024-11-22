@@ -112,7 +112,6 @@ lx, ly, lz = cell_par[0], cell_par[1], cell_par[2]
 a, b = 1, 1.25
 c = np.sqrt(a**2 + b**2)
 theta = np.arctan((b*ly)/(a*lx))
-A = lx*ly*np.sin(cell_par[5]); print(A)
 
 log1 = lammps_logfile.File("300_xz.log")
 
@@ -139,14 +138,14 @@ for var in direction:
         d = 'P'+var
         z = abs(log.get(d, run_num=2))
         p_300[var] = z
-        energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
+        energy[var] = log.get(key, run_num=2)*0.0433634*1000
     else:
         log = lammps_logfile.File('300_-450.log')
         pxz = abs(log.get('Pxz', run_num = 2))
         pyz = abs(log.get('Pyz', run_num = 2))
         z = abs(pyz*np.sin(theta) - pxz*np.cos(theta))
         p_300[var] = z
-        energy[var] = log.get(key, run_num=2)*0.0433634*1e3/A
+        energy[var] = log.get(key, run_num=2)*0.0433634*1000
 
 fig, axs = plt.subplots(2, 1, figsize=(9, 10))
 for label in ['xy', 'xz', 'yz', '-450']:
@@ -179,18 +178,14 @@ axs[0].set_xticklabels([])
 axs[0].set_xlim(-0.001, 0.2)
 axs[1].set_xlim(-0.001, 0.2)
 axs[0].set_ylim(0, 4200)
-#axs[1].set_ylim(0, 0.00004)
 axs[0].legend(loc=1)
 axs[1].legend(loc=1)
 axs[0].set_ylabel('$\sigma$ (MPa)')
-axs[1].set_ylabel('$\Delta E$ (meV / atom-$\mathrm{\AA}^2$)')
+axs[1].set_ylabel('$\Delta E$ (meV / atom)')
 axs[1].set_xlabel('$\epsilon$')
 axs[1].xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-formatter = tkr.FuncFormatter(lambda x, pos: f"{x * 1e4:.2f}")
-axs[1].yaxis.set_major_formatter(formatter)
 from matplotlib.ticker import MultipleLocator
 axs[1].xaxis.set_major_locator(MultipleLocator(0.05))
-axs[1].text( -0.01, 1.02, r"$\times 10^{-4}$", transform=axs[1].transAxes, fontsize=14, ha='center', va='center' )
 plt.tight_layout()
 plt.savefig('Fig9-strain.pdf')
 #plt.show()
