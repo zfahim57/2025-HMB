@@ -148,7 +148,7 @@ for var in direction:
         energy[var] = log.get(key, run_num=2)*0.0433634*1000
 
 fig, axs = plt.subplots(2, 1, figsize=(9, 10))
-for label in ['xy', 'xz', 'yz', '-450']:
+for label in ['-450', 'xy', 'xz', 'yz']:
     y = p_300[label]
     y = savgol_filter(y, 20, 2)
     y -= y[0] + 1e-2
