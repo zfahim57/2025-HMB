@@ -10,7 +10,7 @@ from matplotlib.colors import LightSource
 from matplotlib import cbook, cm
 from matplotlib.axes import Axes
 import seaborn as sns
-sns.set(font_scale=1.5, font='Arial')
+sns.set(font_scale=1.7, font='Arial')
 
 def move_ax(ax, dx=None, dy=None, axisoff=True):
     pos1 = ax.get_position()
@@ -105,11 +105,11 @@ plt.grid(False)
 plt.savefig('Fig8-hightemp_shear.pdf')
 plt.close()
 
-sns.set(font_scale=2.6, font='Arial')
+sns.set(font_scale=2.7, font='Arial')
 #plotting xz and yz from 50 to 400
 x, y, z = shear_calculation(50, 50)
 #fig, axs = plt.subplots(1, 2, figsize=(12, 7.5))
-fig, axs = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw={'width_ratios': [1, 1.2]})
+fig, axs = plt.subplots(1, 2, figsize=(12, 7.5), gridspec_kw={'width_ratios': [1, 1.25]})
 plt.subplots_adjust(wspace=0.25)
 labelpad_value = -10
 for i in range(2):
@@ -120,7 +120,7 @@ for i in range(2):
         axs[i].set_title('(c)')
         axs[i].tick_params(axis='both', which='major', pad=10)
     if i == 0:
-       axs[i].set_xlabel('$G_x$ (GPa)')
+       axs[i].set_xlabel('$G_y$ (GPa)')
        axs[i].set_ylabel('$G_z$ (GPa)')
        axs[i].set_title('(a)')
        axs[i].tick_params(axis='both', which='major', pad=10)
