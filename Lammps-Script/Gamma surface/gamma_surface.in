@@ -1,0 +1,141 @@
+shell echo -n "" > logEf.txt
+include lmp.in
+replicate 2 2 1
+#--------------variable--------------
+variable    zhii     equal zhi
+variable    zloi     equal zlo
+variable    zhif     equal ${zhii}+10
+variable    zlof     equal ${zloi}-10
+#variable       zhalf    equal 0.5*${zhiw}
+variable        dt               equal 1.000
+variable        thermo   equal 100
+
+thermo          ${thermo}
+neighbor        1.0    bin
+neigh_modify    every 1 delay 5 check yes
+thermo_style    custom step temp ke pe etotal lx ly lz xy xz yz pxx pyy pzz pxy pxz pyz press vol
+thermo_modify   lost warn norm yes
+timestep 	    ${dt}
+
+#--------------region------------
+#region 1 block INF INF INF INF INF ${zhalf}
+#region 2 block INF INF INF INF ${zhalf} INF
+#region whole block INF INF INF INF INF ${zhif}
+#group top region 2
+#group bot region 1
+group bot molecule 1 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 48 49 50 51 52 53 54 55 56 58 65 66 67 68 69 70 72 82 111 127 129 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 176 177 178 179 180 181 182 183 184 186 193 194 195 196 197 198 200 210 239 255 257 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 293 294 295 296 297 298 299 300 301 302 304 305 306 307 308 309 310 311 312 314 321 322 323 324 325 326 328 338 367 383 385 387 388 389 390 391 392 393 394 395 396 397 398 399 400 401 403 404 405 406 407 408 409 410 411 412 413 414 415 416 417 418 419 420 421 422 423 424 425 426 427 428 429 430 432 433 434 435 436 437 438 439 440 442 449 450 451 452 453 454 456 466 495 511
+
+group top molecule 2 18 47 57 59 60 61 62 63 64 71 73 74 75 76 77 78 79 80 81 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 128 130 146 175 185 187 188 189 190 191 192 199 201 202 203 204 205 206 207 208 209 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 256 258 274 303 313 315 316 317 318 319 320 327 329 330 331 332 333 334 335 336 337 339 340 341 342 343 344 345 346 347 348 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 368 369 370 371 372 373 374 375 376 377 378 379 380 381 382 384 386 402 431 441 443 444 445 446 447 448 455 457 458 459 460 461 462 463 464 465 467 468 469 470 471 472 473 474 475 476 477 478 479 480 481 482 483 484 485 486 487 488 489 490 491 492 493 494 496 497 498 499 500 501 502 503 504 505 506 507 508 509 510 512
+
+change_box all z final ${zlof} ${zhif} units box
+
+#read_dump dump.minimized 0 x y z    
+#---------------minimizations----
+min_style cg
+#fix 1 all box/relax x 0.0 y 0.0 xy 0.0 
+minimize 1e-5 1e-5 100000 100000
+
+#unfix 1
+#compute peratom all pe/atom
+#compute eatoms all reduce sum c_peratom
+
+#run 10
+reset_timestep 0
+write_dump all custom dump.minimized id type x y z
+
+#write_restart restart.minimized
+
+#variable E equal "c_eatoms"
+#variable Eo equal $E
+
+#----------------displace------
+#fix 1 all setforce 0 0 NULL
+#clear
+variable lcount equal 101 #1
+variable a loop ${lcount}
+variable xlat equal 10.6
+variable ylat equal 12.6
+variable n equal ${lcount}-1
+variable xdisp equal ${xlat}/$n
+variable ydisp equal ${ylat}/$n
+
+label loop1_start
+#read_restart restart.minimized
+#	kspace_style pppm 0.0005
+	#kspace_modify gewald 0.29202898720871845 mesh 32 32 72 order 6
+	#pair_coeff 1 1   0.1094000   3.3996695
+	#pair_coeff 2 2   0.0860000   3.3996695
+	#pair_coeff 3 3   0.0157000   2.6495328
+	fix 1 all setforce 0 0 NULL
+    
+    variable a_f equal ${a}-1
+    variable b loop ${lcount}
+	variable a_disp equal ${a_f}*${xdisp}-${xlat}/2
+
+    #displace_atoms top move ${a_disp} 0.0 0.0 units box
+
+    #compute 1a${a} all pe/atom
+    #compute 2a${a} all reduce sum c_1a${a}
+
+    #run 0
+
+    #variable can equal c_2a${a}
+    #variable Eaff equal ${can}
+    #variable Eaf equal ${Eaff}
+
+    #print Loop=-${a} append logEf.txt
+    #print Energy=${Eaf} append logEf.txt
+    #print "at loop $a energy ${Eaf}" append logEf.txt
+    
+    label loop2_start
+		read_dump dump.minimized 0 x y z    
+		
+        variable b_f equal ${b}-1
+		variable b_disp equal ${b_f}*${ydisp}-${ylat}/2
+        variable abs string "${a}p"
+        variable ab string "${abs}${b}"
+
+        displace_atoms top move ${a_disp} ${b_disp} 0.0 units box
+		minimize 1e-5 1e-5 100000 100000
+        compute 1 all pe/atom
+        compute 2 all reduce sum c_1
+		
+        run 0
+        
+		variable cnn equal c_2
+        variable Ef0 equal ${cnn}
+        #variable Ef1 equal ${Ef0}
+
+		
+		fix 3 all box/relax x 0.0 y 0.0 xy 0.0 
+		minimize 1e-5 1e-5 100000 100000
+
+        #compute 4 all pe/atom
+        #compute 5 all reduce sum c_4
+
+        #dump            1${a}${b} all custom 1 loop${a}${b}.dump element id mol type x y z
+        run 0
+		
+		variable cn equal c_2
+        variable Ef1 equal ${cn}
+
+        #undump 1${a}${b}
+
+        #print Loop=$a${b} append logEf.txt
+        #print Energy=${Ef} append logEf.txt
+        print "${a_disp} ${b_disp} ${Ef0} ${Ef1}" append logEf.txt
+
+		uncompute 1	
+		uncompute 2	
+		unfix 3
+
+        next b
+        jump SELF loop2_start
+
+    label loop2_end
+
+    next a
+    jump SELF loop1_start
+label loop1_end
+
+#displace_atoms is used here to merge to the two remaining 

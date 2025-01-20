@@ -1,0 +1,138 @@
+include lmp.in
+variable temperature equal      350.000
+variable endtemperature equal      390.000
+variable patm equal        1.000
+variable dt equal        1.000
+variable trelax1 equal   1000000
+variable trelax2 equal   10000000
+variable thermo equal	5000
+variable ele_string string "C C H"
+replicate  6 5 3
+
+variable tdamp      equal 100*${dt}
+variable pdamp      equal 100*${dt}
+variable pe         equal pe
+variable temp       equal temp
+
+# for units real, pressure is in [atmospheres] = 0.101325 [MPa]
+variable sxx        equal "-pxx*0.101325"
+variable syy        equal "-pyy*0.101325"
+variable szz        equal "-pzz*0.101325"
+variable sxz        equal "-pxz*0.101325"
+variable syz        equal "-pyz*0.101325"
+variable sxy        equal "-pxy*0.101325"
+variable    xcm     equal xcm(all,x)
+variable    ycm     equal xcm(all,y)
+variable    zcm     equal xcm(all,z)
+variable    xhi     equal xhi
+variable    yhi     equal yhi
+variable    zhi     equal zhi
+variable    xlo     equal xlo
+variable    ylo     equal ylo
+variable    zlo     equal zlo
+variable    xy      equal xy
+variable    xz      equal xz
+variable    yz      equal yz
+
+thermo          ${thermo}
+neighbor        1.0    bin
+neigh_modify    every 1 delay 5 check yes
+thermo_style    custom step temp ke pe etotal lx ly lz xy xz yz pxx pyy pzz pxy pxz pyz press vol
+thermo_modify   lost warn norm yes
+timestep 	    ${dt}
+
+#======================== Energy minimization
+min_style       cg
+minimize        1.0e-25 1.0e-25 100000 1000000
+dump            1 all custom 10000 0.dump element id mol type x y z
+undump          1
+
+#========================= Global setting for NPT simulation
+fix             langevin all langevin ${temperature} ${temperature} ${tdamp} 32258678 zero yes
+
+#======================== NPT equilibration
+velocity        all create ${temperature} 1938072 mom yes rot no
+fix             1 all nph tri ${patm} ${patm} ${pdamp} fixedpoint ${xcm} ${ycm} ${zcm} flip no
+
+
+dump            1 all custom 20000 300_equilibrium.*.dump element id mol type x y z
+dump_modify     1 element ${ele_string}
+run             ${trelax1}
+unfix           1
+undump          1
+unfix		langevin
+
+#======================== HEATING
+reset_timestep  0
+dump            1 all custom 10000 heating.*.dump element id mol type x y z
+dump_modify     1 element ${ele_string}
+compute         cc1 all chunk/atom molecule
+compute         myChunk all com/chunk cc1
+
+fix             1 all nph tri ${patm} ${patm} ${pdamp} fixedpoint ${xcm} ${ycm} ${zcm} flip no
+fix             2 all ave/time 2 100 ${thermo} v_temp v_sxx v_syy v_szz v_sxz v_syz v_sxy v_pe file output_heating.dat
+fix             3 all ave/time 2 100 ${thermo} c_myChunk[*] file center_heating.dat mode vector
+fix             4 all print ${thermo} "${xhi} ${xlo} ${yhi} ${ylo} ${zhi} ${zlo} ${xy} ${xz} ${yz}" screen no file box_parameters_heating.dat 
+
+fix             langevin all langevin ${temperature} ${endtemperature} ${tdamp} 32258678 zero yes
+
+run             ${trelax2} 
+
+unfix           4  # center.dat 
+unfix           3  # center.dat 
+unfix           2  # output.dat
+unfix           1
+unfix           langevin
+undump		1
+
+#======================== NPT equilibration
+reset_timestep  0
+fix             langevin all langevin ${endtemperature} ${endtemperature} ${tdamp} 32258678 zero yes
+fix             1 all nph tri ${patm} ${patm} ${pdamp} fixedpoint ${xcm} ${ycm} ${zcm} flip no
+
+
+
+dump            1 all custom 20000 400_equilibrium.*.dump element id mol type x y z
+dump_modify     1 element ${ele_string}
+run             ${trelax1}
+unfix           1
+undump          1
+unfix		langevin
+#======================== Cooling
+reset_timestep  0
+dump            1 all custom 10000 cooling.*.dump element id mol type x y z
+dump_modify     1 element ${ele_string}
+compute         cc2 all chunk/atom molecule
+compute         myChunk2 all com/chunk cc2
+
+fix             1 all nph tri ${patm} ${patm} ${pdamp} fixedpoint ${xcm} ${ycm} ${zcm} flip no
+fix             2 all ave/time 2 100 ${thermo} v_temp v_sxx v_syy v_szz v_sxz v_syz v_sxy v_pe file output_cooling.dat
+fix             3 all ave/time 2 100 ${thermo} c_myChunk2[*] file center_cooling.dat mode vector
+fix             4 all print ${thermo} "${xhi} ${xlo} ${yhi} ${ylo} ${zhi} ${zlo} ${xy} ${xz} ${yz}" screen no file box_parameters_cooling.dat 
+
+fix             langevin all langevin ${endtemperature} ${temperature} ${tdamp} 32258678 zero yes
+
+run             ${trelax2} 
+
+unfix           4  # center.dat 
+unfix           3  # center.dat 
+unfix           2  # output.dat
+unfix           1
+unfix           langevin
+undump		1
+
+#======================== NPT equilibration
+reset_timestep  0
+fix             langevin all langevin ${temperature} ${temperature} ${tdamp} 32258678 zero yes
+fix             1 all nph tri ${patm} ${patm} ${pdamp} fixedpoint ${xcm} ${ycm} ${zcm} flip no
+
+
+dump            1 all custom 20000 cooling_equilibrium.*.dump element id mol type x y z
+dump_modify     1 element ${ele_string}
+run             ${trelax1}
+unfix           1
+undump          1
+unfix		langevin
+
+######################################
+# SIMULATION DONE
